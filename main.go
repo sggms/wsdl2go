@@ -25,7 +25,7 @@ func main() {
 	}{}
 	flag.StringVar(&opts.Src, "i", opts.Src, "input file, url, or '-' for stdin")
 	flag.StringVar(&opts.Dst, "o", opts.Dst, "output file, or '-' for stdout")
-	flag.BoolVar(&opts.Insecure, "yolo", opts.Insecure, "accept invalid https certificates")
+	flag.BoolVar(&opts.Insecure, "insecure", opts.Insecure, "accept invalid https certificates")
 	flag.BoolVar(&opts.Version, "version", opts.Version, "show version and exit")
 	flag.Parse()
 	if opts.Version {
