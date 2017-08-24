@@ -34,6 +34,9 @@ type Encoder interface {
 	// is used when fetching remote parts of WSDL
 	// and WSDL schemas.
 	SetClient(c *http.Client)
+
+	// SetRemotePrefix sets a prefix for remotes that do not start with 'http'
+	SetRemotePrefix(string)
 }
 
 type goEncoder struct {
@@ -68,6 +71,8 @@ type goEncoder struct {
 	needsTag          map[string]bool
 	needsStdPkg       map[string]bool
 	needsExtPkg       map[string]bool
+
+	remotePrefix string
 }
 
 // NewEncoder creates and initializes an Encoder that generates code to w.
@@ -89,6 +94,10 @@ func NewEncoder(w io.Writer) Encoder {
 
 func (ge *goEncoder) SetClient(c *http.Client) {
 	ge.http = c
+}
+
+func (ge *goEncoder) SetRemotePrefix(prefix string) {
+	ge.remotePrefix = prefix
 }
 
 func gofmtPath() (string, error) {
@@ -245,6 +254,11 @@ func (ge *goEncoder) importSchema(d *wsdl.Definitions) error {
 
 // download xml from url, decode in v.
 func (ge *goEncoder) importRemote(url string, v interface{}) error {
+	// adjust malformed SOAP
+	if ge.remotePrefix != `` && !strings.HasPrefix(url, "http") {
+		url = ge.remotePrefix + url
+	}
+
 	resp, err := ge.http.Get(url)
 	if err != nil {
 		return err
@@ -579,7 +593,6 @@ func (ge *goEncoder) writeSOAPFunc(w io.Writer, d *wsdl.Definitions, op *wsdl.Op
 	})
 	return true
 }
-
 
 func renameParam(p, name string) string {
 	v := strings.SplitN(p, " ", 2)
